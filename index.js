@@ -2,6 +2,7 @@ const TwitchBot = require('twitch-bot');
 
 let teamID = 10;
 let sassTime = 'America/Toronto';
+let timeZone = sassTime;
 
 /*
 This project is made possible thanks to this great API documentation: https://gitlab.com/dword4/nhlapi
@@ -83,14 +84,38 @@ async function leafs(team) {
                     }
                 }
                 if (status['abstractGameState'] === "Preview") {
-                    msg = (home['team']['name'] + " play the " + away['team']['name'] + " tonight at " + new Date(Date.parse(dateTime)).toLocaleTimeString('en-US', {timeZone: timeZone}) + " " + timeZone ".");
+                    msg = (home['team']['name'] + " play the " + away['team']['name'] + " tonight at " + new Date(Date.parse(dateTime)).toLocaleTimeString('en-US', {timeZone: timeZone}) + " Sasstime (" + timeZone + ") sasslyCheers.");
                 }
+                Bot.say(msg)
             } else {
-                msg = ("There are no games scheduled for today.")
+                schedule(team)
             }
+        });
+}
+
+async function schedule(team) {
+    let msg = "";
+    const fetch = require('node-fetch');
+    let url = 'https://statsapi.web.nhl.com/api/v1/teams/' + team + '?expand=team.schedule.next';
+    let settings = {method: "Get"};
+    fetch(url, settings)
+        .then(res => res.json())
+        .then((json) => {
+            /*
+            * Create a few variables from the json data: Games, which dumps the first games[0] into a variable to be used.
+            * Status: located inside of games, it reads the json returns abstractGameState, codedGameState, detailedState, statusCode, startTimeTBD
+            * Home: Uses teams to return leagueRecord, Score, Team {id, name, link}
+            * Away:Uses teams to return leagueRecord, Score, Team {id, name, link}
+            * */
+            let games = json['teams'][0]['nextGameSchedule']['dates'][0]['games'][0];
+            let awayTeam = games['teams']['away']['team']['name'];
+            let homeTeam = games['teams']['home']['team']['name'];
+            let dateTime = games['gameDate'];
+            msg = ("There are no games scheduled for today. The "+ homeTeam + " will play the " + awayTeam + " on " + new Date(Date.parse(dateTime)).toLocaleString('en-US', {timeZone: timeZone}) + " Sasstime (" + timeZone + ') sasslyCheers');
             Bot.say(msg)
         });
 }
+
 
 let _oldHomeScore = 0;
 let _oldAwayScore = 0;
@@ -165,17 +190,17 @@ setInterval(async function leafsScore() {
                      */
                     if (homeScore > _oldHomeScore) {
                         if (homeTeam === "Toronto Maple Leafs") {
-                            msg = ("wow! what a surprise, " + homeTeam + " scored. It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
+                            msg = ("wow! what a surprise sasslyThis, " + homeTeam + " scored. It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
                         } else {
-                            msg = (homeTeam + " scored. it is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
+                            msg = (homeTeam + " scored sasslyFeels. it is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
                         }
                         Bot.say(msg)
                     }
                     if (awayScore > _oldAwayScore) {
                         if (awayTeam === "Toronto Maple Leafs") {
-                            msg = ("wow! what a surprise, " + awayTeam + " scored. It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
+                            msg = ("wow! what a surprise sasslyThis, " + awayTeam + " scored. It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
                         } else {
-                            msg = (awayTeam + " scored. it is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
+                            msg = (awayTeam + " scored sasslyFeels. it is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
                         }
                         Bot.say(msg)
                     }
@@ -195,10 +220,11 @@ setInterval(async function leafsScore() {
 }, 10000);
 
 
+
 const Bot = new TwitchBot({
-    username: '', // the username of the bot
+    username: 'your_username_here', // the username of the bot
     oauth: 'YOUR_OAUTH_CODE_HERE', // you can generate one at https://twitchapps.com/tmi/
-    channels: [''] // the username of the channel you want the bot in
+    channels: ['channel_name'] // the username of the channel you want the bot in
 });
 
 Bot.on('join', channel => {
