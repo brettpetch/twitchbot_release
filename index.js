@@ -62,11 +62,11 @@ async function leafs(team) {
                 let status = games['status'];
                 let home = games['teams']['home'];
                 let away = games['teams']['away'];
-                let dateTime = games['gameDate']
+                let dateTime = games['gameDate'];
                 let currentPeriodOrdinal = games['linescore']['currentPeriodOrdinal'];
                 let currentPeriodTimeRemaining = games['linescore']['currentPeriodTimeRemaining'];
                 // Check to see if the game is live or nah
-                if (status['abstractGameState'] === "Live") {
+                if (status['abstractGameState'] === "Live" || status['abstractGameState'] === "Final") {
                     if (currentPeriodTimeRemaining === 'END') {
                         currentPeriodTimeRemaining = '0.0s'
                     }
@@ -128,7 +128,7 @@ ToDo: make it so when game is inactive, polling rates are lower maybe.
 setInterval(async function leafsScore() {
     msg = "";
     const fetch = require('node-fetch');
-    let url = 'https://statsapi.web.nhl.com/api/v1/schedule?teamId=' + teamID + '&expand=schedule.linescore';
+    let url = 'https://statsapi.web.nhl.com/api/v1/schedule?teamId=' + teamID + '&expand=schedule.scoringplays';
     let settings = {method: "Get"};
     fetch(url, settings)
         .then(res => res.json())
@@ -153,6 +153,7 @@ setInterval(async function leafsScore() {
                 let losingScore = 0;
                 let currentPeriodOrdinal = games['linescore']['currentPeriodOrdinal'];
                 let currentPeriodTimeRemaining = games['linescore']['currentPeriodTimeRemaining'];
+                let lastScorer = games['scoringPlays'][games['scoringPlays'.length-1]]['result']['description'];
                 let msg = "";
                 /*
                 * Detect if game is live, check if either score is greater than score that is stored outide the function.
@@ -188,23 +189,35 @@ setInterval(async function leafsScore() {
                     * Send a message in chat with score containing "" + team name that scored + "scored" + team['score'] + " - " + team['score'] + " " + winningTeam
                     * Do it all again.
                      */
-                    if (homeScore > _oldHomeScore) {
+                    if (homeScore > _oldHomeScore && homeScore !== awayScore) {
+                        /* Check if homeTeam is "Toronto Maple Leafs */
                         if (homeTeam === "Toronto Maple Leafs") {
-                            msg = ("wow! what a surprise sasslyThis, " + homeTeam + " scored. It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
-                        } else {
-                            msg = (homeTeam + " scored sasslyFeels. it is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
+                            /* Return goal message for TML */
+                            msg = ("GOAL!!!" + lastScorer + " of " + homeTeam + "scored!" + " It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
+                        }
+                        else {
+                            /* returns goal message for not TML */
+                            msg = (homeTeam + " scored sasslyFeels. " + lastScorer + " are to blame for this travesty. It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
                         }
                         Bot.say(msg)
                     }
-                    if (awayScore > _oldAwayScore) {
+                    if (awayScore > _oldAwayScore && homeScore !== awayScore) {
+                        /* Check if away score is larger than previous away score, then ensure home score is not equal to away score */
                         if (awayTeam === "Toronto Maple Leafs") {
-                            msg = ("wow! what a surprise sasslyThis, " + awayTeam + " scored. It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
-                        } else {
-                            msg = (awayTeam + " scored sasslyFeels. it is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
+                            /* Check if leafs, return message */
+                            msg = ("GOAL!!!" + lastScorer + " of " + awayTeam + "scored!" + " It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
+                        }
+                        else {
+                            /* Return away team scored */
+                            msg = (awayTeam + " scored sasslyFeels. " + lastScorer + " are to blame for this travesty. It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
                         }
                         Bot.say(msg)
                     }
-                    /*
+                    if ((homeScore > _oldHomeScore || awayScore > _oldAwayScore) && homeScore === awayScore) {
+                        /* check if home score or away score is greater than previous, ensure homeScore = awayScore */
+                        msg = ("It's all tied up here in the " + currentPeriodOrdinal + ". You can thank " + lastScorer + " The score is now " + homeScore + " - " + awayScore + " " + homeTeam + " vs " + awayTeam +  ". There is " + currentPeriodTimeRemaining + " remaining in the period")
+                        Bot.say(msg)
+                    }                    /*
                     * Check to see if home score and _oldHomeScore are the same
                     * If they are not the same, correct _oldHomeScore and _oldAwayScore.
                      */
@@ -218,26 +231,23 @@ setInterval(async function leafsScore() {
             }
         });
 }, 10000);
-
-
-
 const Bot = new TwitchBot({
-    username: 'your_username_here', // the username of the bot
-    oauth: 'YOUR_OAUTH_CODE_HERE', // you can generate one at https://twitchapps.com/tmi/
-    channels: ['channel_name'] // the username of the channel you want the bot in
+    username: 'your-username-here',
+    oauth: 'your-oauth-code',
+    channels: ['your-twitch-channel']
 });
 
 Bot.on('join', channel => {
-    console.log(`Joined channel: ${channel}`);
     Bot.say("/color Blue");
 });
 
 Bot.on('error', err => {
-    console.log(err);
+    Bot.say(err);
 });
 
 Bot.on('message', chatter => {
-    if(chatter.message === '!score' || chatter.message === '!leafs') {
+    if(chatter.message === '!score' || chatter.message === '!leafs' || chatter.message === '!LEAFS') {
         leafs(teamID);
     }
 });
+
