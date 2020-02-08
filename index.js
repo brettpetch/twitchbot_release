@@ -4,6 +4,40 @@ let teamID = 10;
 let sassTime = 'America/Toronto';
 let timeZone = sassTime;
 
+let teams = {
+    1: "New Jersey Devils",
+    2:    "New York Islanders",
+    3:    "New York Rangers",
+    4:    "Philadelphia Flyers",
+    5:    "Pittsburgh Penguins",
+    6:    "Boston Bruins",
+    7:    "Buffalo Sabres",
+    8:    "Montréal Canadiens",
+    9:    "Ottawa Senators",
+    10:   "Toronto Maple Leafs",
+    12:   "Carolina Hurricanes",
+    13:   "Florida Panthers",
+    14:   "Tampa Bay Lightning",
+    15:   "Washington Capitals",
+    16:   "Chicago Blackhawks",
+    17:   "Detroit Red Wings",
+    18:   "Nashville Predators",
+    19:   "St. Louis Blues",
+    20:   "Calgary Flames",
+    21:   "Colorado Avalanche",
+    22:   "Edmonton Oilers",
+    23:   "Vancouver Canucks",
+    24:   "Anaheim Ducks",
+    25:   "Dallas Stars",
+    26:   "Los Angeles Kings",
+    28:   "San Jose Sharks",
+    29:   "Columbus Blue Jackets",
+    30:   "Minnesota Wild",
+    52:    "Winnipeg Jets",
+    53:   "Arizona Coyotes",
+    54:   "Vegas Golden Knights"
+}
+
 /*
 This project is made possible thanks to this great API documentation: https://gitlab.com/dword4/nhlapi
 All data presented is owned by NHL; this is purely a transport medium for clients using Twitch Chat.
@@ -240,7 +274,7 @@ setInterval(async function leafsScore() {
 
 const Bot = new TwitchBot({
     username: '', // Username of Bot (create new twitch account or use existing)
-    oauth: 'oauth:2y14gx5mlzivl3pr86k7qs9n8k5dje', // Get oauth from here: https://twitchapps.com/tmi/
+    oauth: '', // Get oauth from here: https://twitchapps.com/tmi/
     channels: ['target_channel'] // change 'target_channel' to the channel name you want TB to occupy.
 });
 

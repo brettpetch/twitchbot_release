@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="dfafe29f-53ea-4006-b7ad-a0ea91459f88" name="Default Changelist" comment="">
+    <list default="true" id="dfafe29f-53ea-4006-b7ad-a0ea91459f88" name="Default Changelist" comment="remove sensitive info">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/leafs.js" beforeDir="false" afterPath="$PROJECT_DIR$/leafs.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nothen.js" beforeDir="false" afterPath="$PROJECT_DIR$/nothen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/index.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,6 +26,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="12.13.0" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path" value="node" />
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
@@ -59,6 +59,7 @@
       <workItem from="1574043203643" duration="119000" />
       <workItem from="1574043778834" duration="3395000" />
       <workItem from="1574111000601" duration="2952000" />
+      <workItem from="1581130004455" duration="1192000" />
     </task>
     <servers />
   </component>
@@ -77,5 +78,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="remove sensitive info" />
+    <option name="LAST_COMMIT_MESSAGE" value="remove sensitive info" />
   </component>
 </project>
