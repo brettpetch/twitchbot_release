@@ -6,37 +6,37 @@ let timeZone = sassTime;
 
 let teams = {
     1: "New Jersey Devils",
-    2:    "New York Islanders",
-    3:    "New York Rangers",
-    4:    "Philadelphia Flyers",
-    5:    "Pittsburgh Penguins",
-    6:    "Boston Bruins",
-    7:    "Buffalo Sabres",
-    8:    "Montréal Canadiens",
-    9:    "Ottawa Senators",
-    10:   "Toronto Maple Leafs",
-    12:   "Carolina Hurricanes",
-    13:   "Florida Panthers",
-    14:   "Tampa Bay Lightning",
-    15:   "Washington Capitals",
-    16:   "Chicago Blackhawks",
-    17:   "Detroit Red Wings",
-    18:   "Nashville Predators",
-    19:   "St. Louis Blues",
-    20:   "Calgary Flames",
-    21:   "Colorado Avalanche",
-    22:   "Edmonton Oilers",
-    23:   "Vancouver Canucks",
-    24:   "Anaheim Ducks",
-    25:   "Dallas Stars",
-    26:   "Los Angeles Kings",
-    28:   "San Jose Sharks",
-    29:   "Columbus Blue Jackets",
-    30:   "Minnesota Wild",
-    52:    "Winnipeg Jets",
-    53:   "Arizona Coyotes",
-    54:   "Vegas Golden Knights"
-}
+    2: "New York Islanders",
+    3: "New York Rangers",
+    4: "Philadelphia Flyers",
+    5: "Pittsburgh Penguins",
+    6: "Boston Bruins",
+    7: "Buffalo Sabres",
+    8: "Montréal Canadiens",
+    9: "Ottawa Senators",
+    10:"Toronto Maple Leafs",
+    12:"Carolina Hurricanes",
+    13:"Florida Panthers",
+    14:"Tampa Bay Lightning",
+    15:"Washington Capitals",
+    16:"Chicago Blackhawks",
+    17:"Detroit Red Wings",
+    18:"Nashville Predators",
+    19:"St. Louis Blues",
+    20:"Calgary Flames",
+    21:"Colorado Avalanche",
+    22:"Edmonton Oilers",
+    23:"Vancouver Canucks",
+    24:"Anaheim Ducks",
+    25:"Dallas Stars",
+    26:"Los Angeles Kings",
+    28:"San Jose Sharks",
+    29:"Columbus Blue Jackets",
+    30:"Minnesota Wild",
+    52:"Winnipeg Jets",
+    53:"Arizona Coyotes",
+    54:"Vegas Golden Knights"
+};
 
 /*
 This project is made possible thanks to this great API documentation: https://gitlab.com/dword4/nhlapi
@@ -228,8 +228,8 @@ setInterval(async function leafsScore() {
                     if (homeScore > _oldHomeScore && homeScore !== awayScore) {
                         let len = games['scoringPlays'].length-1;
                         let lastScorer = games['scoringPlays'][len]['result']['description'];
-                        /* Check if homeTeam is "Toronto Maple Leafs */
-                        if (homeTeam === "Toronto Maple Leafs") {
+                        /* Check if homeTeam is teams[teamID] */
+                        if (homeTeam === teams[teamID]) {
                             /* Return goal message for TML */
                             msg = ("GOAL!!!" + lastScorer + " of " + homeTeam + "scored!" + " It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
                         } else {
@@ -242,7 +242,7 @@ setInterval(async function leafsScore() {
                         let len = games['scoringPlays'].length-1;
                         let lastScorer = games['scoringPlays'][len]['result']['description'];
                         /* Check if away score is larger than previous away score, then ensure home score is not equal to away score */
-                        if (awayTeam === "Toronto Maple Leafs") {
+                        if (awayTeam === teams[teamID]) {
                             /* Check if leafs, return message */
                             msg = ("GOAL!!! " + lastScorer + " of " + awayTeam + "scored!" + " It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
                         } else {
