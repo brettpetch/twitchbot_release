@@ -1,81 +1,16 @@
 const TwitchBot = require('twitch-bot');
+const fs = require('fs');
 
 let teamID = 10;
-let sassTime = 'America/Toronto';
-let timeZone = sassTime;
-
-let teams = {
-    1: "New Jersey Devils",
-    2: "New York Islanders",
-    3: "New York Rangers",
-    4: "Philadelphia Flyers",
-    5: "Pittsburgh Penguins",
-    6: "Boston Bruins",
-    7: "Buffalo Sabres",
-    8: "Montréal Canadiens",
-    9: "Ottawa Senators",
-    10:"Toronto Maple Leafs",
-    12:"Carolina Hurricanes",
-    13:"Florida Panthers",
-    14:"Tampa Bay Lightning",
-    15:"Washington Capitals",
-    16:"Chicago Blackhawks",
-    17:"Detroit Red Wings",
-    18:"Nashville Predators",
-    19:"St. Louis Blues",
-    20:"Calgary Flames",
-    21:"Colorado Avalanche",
-    22:"Edmonton Oilers",
-    23:"Vancouver Canucks",
-    24:"Anaheim Ducks",
-    25:"Dallas Stars",
-    26:"Los Angeles Kings",
-    28:"San Jose Sharks",
-    29:"Columbus Blue Jackets",
-    30:"Minnesota Wild",
-    52:"Winnipeg Jets",
-    53:"Arizona Coyotes",
-    54:"Vegas Golden Knights"
-};
+let timeZone = 'America/Toronto';
 
 /*
 This project is made possible thanks to this great API documentation: https://gitlab.com/dword4/nhlapi
 All data presented is owned by NHL; this is purely a transport medium for clients using Twitch Chat.
 
-Team IDs (Last updated: 2019-11-18)
-* 1:    New Jersey Devils
-* 2:    New York Islanders
-* 3:    New York Rangers
-* 4:    Philadelphia Flyers
-* 5:    Pittsburgh Penguins
-* 6:    Boston Bruins
-* 7:    Buffalo Sabres
-* 8:    Montréal Canadiens
-* 9:    Ottawa Senators
-* 10:   Toronto Maple Leafs
-* 12:   Carolina Hurricanes
-* 13:   Florida Panthers
-* 14:   Tampa Bay Lightning
-* 15:   Washington Capitals
-* 16:   Chicago Blackhawks
-* 17:   Detroit Red Wings
-* 18:   Nashville Predators
-* 19:   St. Louis Blues
-* 20:   Calgary Flames
-* 21:   Colorado Avalanche
-* 22:   Edmonton Oilers
-* 23:   Vancouver Canucks
-* 24:   Anaheim Ducks
-* 25:   Dallas Stars
-* 26:   Los Angeles Kings
-* 28:   San Jose Sharks
-* 29:   Columbus Blue Jackets
-* 30:   Minnesota Wild
-* 52    Winnipeg Jets
-* 53:   Arizona Coyotes
-* 54:   Vegas Golden Knights
- */
+NHL Team IDs: https://statsapi.web.nhl.com/api/v1/teams
 
+*/
 
 async function leafs(team) {
     let msg = "";
@@ -90,7 +25,7 @@ async function leafs(team) {
             * Status: located inside of games, it reads the json returns abstractGameState, codedGameState, detailedState, statusCode, startTimeTBD
             * Home: Uses teams to return leagueRecord, Score, Team {id, name, link}
             * Away:Uses teams to return leagueRecord, Score, Team {id, name, link}
-            * */
+            */
             if (json['totalGames'] > 0) {
                 let games = json['dates'][0]['games'][0];
                 let status = games['status'];
@@ -100,12 +35,9 @@ async function leafs(team) {
                 let currentPeriodOrdinal = games['linescore']['currentPeriodOrdinal'];
                 let currentPeriodTimeRemaining = games['linescore']['currentPeriodTimeRemaining'];
                 // Check to see if the game is live or nah
-                if (status['abstractGameState'] === "Live" || status['abstractGameState'] === "Final") {
+                if (status['abstractGameState'] === "Live") {
                     if (currentPeriodTimeRemaining === 'END') {
                         currentPeriodTimeRemaining = '0.0s'
-                    }
-                    if (status['abstractGameState'] === "Final") {
-
                     }
                     // check to see if the game is tied.
                     if (home['score'] === away['score']) {
@@ -122,6 +54,14 @@ async function leafs(team) {
                 }
                 if (status['abstractGameState'] === "Preview") {
                     msg = (home['team']['name'] + " play the " + away['team']['name'] + " tonight at " + new Date(Date.parse(dateTime)).toLocaleTimeString('en-US', {timeZone: timeZone}) + " Sasstime (" + timeZone + ") sasslyCheers.");
+                }
+                if (status['abstractGameState'] === "Final") {
+                    if (home['score'] < away['score']) {
+                        msg = ("The " + away['team']['name'] + " won " + away['score'] + " - " + home['score'] + " against the " + home['team']['name']);
+                    }
+                    if (home['score'] > away['score']) {
+                        msg = ("The " + home['team']['name'] + " won " + home['score'] + " - " + away['score'] + " against the " + away['team']['name']);
+                    }
                 }
                 Bot.say(msg)
             } else {
@@ -156,6 +96,12 @@ async function schedule(team) {
 
 let _oldHomeScore = 0;
 let _oldAwayScore = 0;
+let shootout = {
+    homeScores: 0,
+    awayScores: 0,
+    awayAttempts: 0,
+    homeAttempts: 0
+};
 
 /*
 Set interval to run leafsScore(): 10 seconds (min poll time for API)
@@ -192,7 +138,7 @@ setInterval(async function leafsScore() {
                 let currentPeriodTimeRemaining = games['linescore']['currentPeriodTimeRemaining'];
                 let msg = "";
                 /*
-                * Detect if game is live, check if either score is greater than score that is stored outide the function.
+                * Detect if game is live, check if either score is greater than score that is stored outside the function.
                 * If score is greater than outside function, check if team that scored is Leafs
                 * If leafs, respond with ("GOALLLLLLLLL!" + home['team']['name'] + "scored! the score is now" -> check who is winning game -> return score as winning or not winning. )
                 * If not Leafs, respond with (home['team']['name'] + "scored :( The score is now -> check to see who is winning game, then return as winning or not winning."
@@ -228,8 +174,8 @@ setInterval(async function leafsScore() {
                     if (homeScore > _oldHomeScore && homeScore !== awayScore) {
                         let len = games['scoringPlays'].length-1;
                         let lastScorer = games['scoringPlays'][len]['result']['description'];
-                        /* Check if homeTeam is teams[teamID] */
-                        if (homeTeam === teams[teamID]) {
+                        /* Check if homeTeam is "Toronto Maple Leafs */
+                        if (homeTeam === "Toronto Maple Leafs") {
                             /* Return goal message for TML */
                             msg = ("GOAL!!!" + lastScorer + " of " + homeTeam + "scored!" + " It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
                         } else {
@@ -242,7 +188,7 @@ setInterval(async function leafsScore() {
                         let len = games['scoringPlays'].length-1;
                         let lastScorer = games['scoringPlays'][len]['result']['description'];
                         /* Check if away score is larger than previous away score, then ensure home score is not equal to away score */
-                        if (awayTeam === teams[teamID]) {
+                        if (awayTeam === "Toronto Maple Leafs") {
                             /* Check if leafs, return message */
                             msg = ("GOAL!!! " + lastScorer + " of " + awayTeam + "scored!" + " It is now " + winningScore + " - " + losingScore + " " + winningTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the " + currentPeriodOrdinal)
                         } else {
@@ -257,7 +203,8 @@ setInterval(async function leafsScore() {
                         /* check if home score or away score is greater than previous, ensure homeScore = awayScore */
                         msg = ("It's all tied up here in the " + currentPeriodOrdinal + ". You can thank " + lastScorer + " The score is now " + homeScore + " - " + awayScore + " " + homeTeam + " vs " + awayTeam + ". There is " + currentPeriodTimeRemaining + " remaining in the period");
                         Bot.say(msg)
-                    }                    /*
+                    }
+                    /*
                     * Check to see if home score and _oldHomeScore are the same
                     * If they are not the same, correct _oldHomeScore and _oldAwayScore.
                      */
@@ -267,15 +214,47 @@ setInterval(async function leafsScore() {
                     if (_oldAwayScore !== away['score']) {
                         _oldAwayScore = away['score']
                     }
+
+                    /* Shootout Shit */
+
+                    if (games['linescore']['hasShootout'] === "true") {
+                        /*
+                        * If has schootout, execute.
+                        * Check home and away attempts and scores to see if > than last
+                        * TODO: create outer variable to store awayAttempts, homeAttempts, homeScores, awayScores
+                         */
+                        if (games['linescore']['shootoutInfo']['away']['attempts'] > shootout.awayAttempts) {
+
+                            games['linescore']['shootoutInfo']['away']['attempts'] = shootout.awayAttempts;
+
+                            msg = (awayTeam + "attempted. No success here. They are " + shootout.awayScores + " for " + (shootout.awayScores + shootout.awayAttempts));
+                        }
+                        if (games['linescore']['shootoutInfo']['away']['scores'] > shootout.awayScores) {
+                            games['linescore']['shootoutInfo']['away']['scores'] = shootout.awayScores;
+                            msg = (awayTeam + "scored. They are " + shootout.awayScores + " for " + (shootout.awayScores + shootout.awayAttempts));
+                        }
+                        if (games['linescore']['shootoutInfo']['home']['attempts'] > shootout.homeAttempts) {
+                            games['linescore']['shootoutInfo']['home']['attempts'] = shootout.homeAttempts;
+                            msg = (homeTeam + "attempted. No success here. They are " + shootout.homeScores + " for " + (shootout.homeScores + shootout.homeAttempts));
+                        }
+                        if (games['linescore']['shootoutInfo']['home']['scores'] > shootout.homeScores) {
+                            games['linescore']['shootoutInfo']['home']['scores'] = shootout.homeScores;
+                            msg = (homeTeam + "scored. They are " + shootout.homeScores + " for " + (shootout.homeScores + shootout.homeAttempts));
+                        }
+                        Bot.say(msg)
+                    }
                 }
             }
         });
-}, 12000);
+}, 10000);
+
+let credentials = fs.readFileSync("credentials.json");
+credentials = JSON.parse(credentials);
 
 const Bot = new TwitchBot({
-    username: '', // Username of Bot (create new twitch account or use existing)
-    oauth: '', // Get oauth from here: https://twitchapps.com/tmi/
-    channels: ['target_channel'] // change 'target_channel' to the channel name you want TB to occupy.
+    username: credentials.username,
+    oauth: credentials.oauth,
+    channels: credentials.channels
 });
 
 Bot.on('join', channel => {
